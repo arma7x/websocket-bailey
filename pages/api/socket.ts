@@ -59,15 +59,15 @@ const SocketHandler = (req, res) => {
           session_id = makeid(50);
         }
 
-        const session_path = `./sessions/${session_id}`;
+        const session_path = `./sessions/session_${session_id}`;
         if (!existsSync(session_path)) {
           mkdirSync(session_path);
         }
-        const baileys_auth_info = `./sessions/${session_id}/baileys_auth_info`;
+        const baileys_auth_info = `./sessions/session_${session_id}/baileys_auth_info`;
         if (!existsSync(baileys_auth_info)) {
           mkdirSync(baileys_auth_info);
         }
-        const baileys_store_multi_json = `./sessions/${session_id}/baileys_store_multi.json`;
+        const baileys_store_multi_json = `./sessions/session_${session_id}/baileys_store_multi.json`;
         client.emit('init-session', session_id);
 
         if (sessions[session_id] != null) {
