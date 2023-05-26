@@ -33,16 +33,8 @@ function AttachmentsWidget(props) {
   const [attachments, setAttachments] = useState([]);
 
   useEffect(() => {
-    let temp = []
-    props.attachments.forEach((file) => {
-      if (file.size > 0) {
-        temp.push({ file, thumbnail: resolveThumbnail(file), preview: resolvePreview(file), caption: ''});
-      }
-    });
-    setAttachments(temp);
-    if (temp.length > 0) {
-      setCaption(temp[index].caption);
-    }
+    if (props.setHandler)
+      props.setHandler(selectFiles);
   }, []);
 
   function resolvePreview(file) {
@@ -75,6 +67,11 @@ function AttachmentsWidget(props) {
     attachments[index].caption = evt.target.value;
   }
 
+  function selectFiles() {
+    const ref = document.getElementById('add-files');
+      if (ref) ref.click();
+  }
+
   function onSubmit() {
     if (props.onSuccess) {
       attachments.forEach((_, i) => {
@@ -83,6 +80,7 @@ function AttachmentsWidget(props) {
       });
       const temp = [...attachments];
       setAttachments([]);
+      setIndex(0);
       props.onSuccess(temp);
     }
   }
@@ -105,7 +103,10 @@ function AttachmentsWidget(props) {
       setCaption(attachments[index].caption);
     }
     if (attachments.length == 0) {
-      if (props.onCancel) props.onCancel();
+      if (props.onCancel) {
+        setIndex(0);
+        props.onCancel();
+      }
     }
   }
 
@@ -122,10 +123,15 @@ function AttachmentsWidget(props) {
   }
 
   return (<>
-    <div style={containerStyle}>
+    <div style={{ ...containerStyle, visibility: (attachments.length == 0 ? 'hidden' : 'visible'), }}>
       <input id="add-files" type="file" name="files" style={{ border: 0, clip: 'rect(0 0 0 0)', height: '1px', margin: '-1px', overflow: 'hidden', padding: 0, position: 'absolute', width: '1px' }} onChange={onChange} multiple />
-      <div style={bodyStyle}>
-        <div><button style={{ position: 'absolute', top:0 ,right:0 }} onClick={() => {if (props.onCancel) props.onCancel(); }}>X</button></div>
+      { attachments.length > 0 && <div style={bodyStyle}>
+        <div><button style={{ position: 'absolute', top:0 ,right:0 }} onClick={() => {
+          setAttachments([]);
+          setIndex(0);
+          if (props.onCancel)
+            props.onCancel();
+        }}>X</button></div>
         {
           attachments.length > 0 &&
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -140,28 +146,27 @@ function AttachmentsWidget(props) {
         { attachments.length > 0 &&
           (
             <div style={{ width: '97%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', }} >
-              <button style={{ width: '8%', }} onClick={() => {
-                const ref = document.getElementById('add-files');
-                if (ref) ref.click();
-              }}>Add</button>
+              <button style={{ width: '8%', }} onClick={selectFiles}>Add</button>
               <textarea style={{ width: '82%', }} id="caption" type="text" value={caption} rows="4" placeholder="Please enter caption" onChange={onCaptionChange} />
               <button style={{ width: '8%', }} onClick={onSubmit}>Submit</button>
             </div>
           )
         }
       </div>
+      }
     </div>
   </>);
 }
 
 export default function Home() {
 
+  let handler;
+
   const [metadata, setMetadata] = useState({ connection: 'connecting' });
   const [qrCode, setQrCode] = useState('');
   const [chats, setChats] = useState([]);
   const [windows, setWindows] = useState('CHAT_LIST'); // CHAT_LIST || chat.id
   const [messages, setMessages] = useState([]);
-  const [attachments, setAttachments] = useState([]);
 
   const resumeSession = () => {
     const session = window.localStorage.getItem('SESSION');
@@ -219,17 +224,9 @@ export default function Home() {
     setWindows('CHAT_LIST');
   }
 
-  function onChange(evt) {
-    setAttachments([...evt.target.files]);
-    evt.target.value = '';
-  }
-
-  function onCancel() {
-    setAttachments([]);
-  }
+  function onCancel() {}
 
   function onSuccess(attachments) {
-    setAttachments([]);
     // TODO: https://github.com/WhiskeySockets/Baileys/tree/master#media-messages
     console.log("READY:", attachments);
   }
@@ -243,7 +240,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <input id="file-picker" type="file" name="files" style={{ border: 0, clip: 'rect(0 0 0 0)', height: '1px', margin: '-1px', overflow: 'hidden', padding: 0, position: 'absolute', width: '1px' }} onChange={onChange} multiple />
         {
           ['connecting', 'close'].indexOf(metadata.connection) === -1
           ? <div>
@@ -267,14 +263,13 @@ export default function Home() {
                     <p>{ JSON.stringify(messages, null, 2) }</p>
                   </div>
 
-                  { attachments.length > 0 && <AttachmentsWidget attachments={[...attachments]} onCancel={onCancel} onSuccess={onSuccess} /> }
+                  <AttachmentsWidget setHandler={(_handler) =>  handler = _handler } onCancel={onCancel} onSuccess={onSuccess} />
 
                   <div style={{ position: 'absolute', bottom: -20, display: 'flex', flexDirection: 'row', width: '100%' }}>
                     <div style={{ width: '14%' }}>
                       <button onClick={() => {
-                        const ref = document.getElementById('file-picker');
-                        if (ref)
-                          ref.click();
+                        if (handler)
+                          handler();
                       }}>ATTACHMENT</button>
                     </div>
                     <div style={{ width: '76%' }}>
