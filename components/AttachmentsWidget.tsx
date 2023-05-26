@@ -94,11 +94,16 @@ export default function AttachmentsWidget(props) {
     evt.target.value = '';
   }
 
-  function removeAttachment(index) {
-    const temp = attachments.splice(index, 1);
+  function removeAttachment(idx) {
+    const temp = attachments.splice(idx, 1);
     setAttachments([...attachments]);
+    let i = 0;
+    if (index >= attachments.length) {
+      i = index - 1;
+      setIndex(i);
+    }
     if (attachments.length > 0) {
-      setCaption(attachments[index].caption);
+      setCaption(attachments[i].caption);
     }
     if (attachments.length == 0) {
       if (props.onCancel) {
