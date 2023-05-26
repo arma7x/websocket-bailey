@@ -85,6 +85,13 @@ function AttachmentsWidget(props) {
     }
   }
 
+  function close() {
+    setAttachments([]);
+    setIndex(0);
+    if (props.onCancel)
+      props.onCancel();
+  }
+
   function onChange(evt) {
     let temp = [];
     [...evt.target.files].forEach((file) => {
@@ -123,15 +130,10 @@ function AttachmentsWidget(props) {
   }
 
   return (<>
-    <div style={{ ...containerStyle, visibility: (attachments.length == 0 ? 'hidden' : 'visible'), }}>
+    <div style={{ ...containerStyle, visibility: (attachments.length == 0 ? 'hidden' : 'visible'), }} onClick={close}>
       <input id="add-files" type="file" name="files" style={{ border: 0, clip: 'rect(0 0 0 0)', height: '1px', margin: '-1px', overflow: 'hidden', padding: 0, position: 'absolute', width: '1px' }} onChange={onChange} multiple />
-      { attachments.length > 0 && <div style={bodyStyle}>
-        <div><button style={{ position: 'absolute', top:0 ,right:0 }} onClick={() => {
-          setAttachments([]);
-          setIndex(0);
-          if (props.onCancel)
-            props.onCancel();
-        }}>X</button></div>
+      { attachments.length > 0 && <div style={bodyStyle} onClick={(evt) => evt.stopPropagation()}>
+        <div><button style={{ position: 'absolute', top:0 ,right:0 }} onClick={close}>X</button></div>
         {
           attachments.length > 0 &&
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
