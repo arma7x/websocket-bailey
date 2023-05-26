@@ -1,0 +1,37 @@
+{
+  "name": "nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@adiwajshing/keyed-db": "^0.2.4",
+    "@hapi/boom": "^10.0.1",
+    "@types/node": "18.15.5",
+    "@types/react": "18.0.28",
+    "@types/react-dom": "18.0.11",
+    "@whiskeysockets/baileys": "^6.0.1",
+    "eslint": "8.36.0",
+    "eslint-config-next": "13.2.4",
+    "fs-extra": "^11.1.1",
+    "next": "13.2.4",
+    "node-cache": "^5.1.2",
+    "pino": "^8.14.1",
+    "qrcode-terminal": "^0.12.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-qr-code": "^2.0.11",
+    "socket.io": "^4.6.1",
+    "socket.io-client": "^4.6.1",
+    "sqlite3": "^5.1.6",
+    "typescript": "5.0.2"
+  },
+  "devDependencies": {
+    "adm-zip": "^0.5.10",
+    "node-fetch": "^2.6.9"
+  }
+}
