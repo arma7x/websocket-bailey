@@ -90,6 +90,11 @@ export default function Home() {
   function openChat(chat) {
     setMessages(chat.messages);
     setWindows(chat.id);
+    setTimeout(() => {
+      const container = document.getElementById('conversations');
+      // container.scrollTop = container.scrollHeight;
+      container.scrollTo(0, container.scrollHeight);
+    }, 500);
   }
 
   function showChatList() {
@@ -128,7 +133,7 @@ export default function Home() {
                 windows !== 'CHAT_LIST' &&
                 <div style={{ position: 'relative' }}>
                   <button onClick={showChatList}>Go Back</button>
-                  <div style={{ position: 'relative', height: '70vh', maxWidth: '800px', overflowY: 'scroll' }}>
+                  <div id="conversations" style={{ position: 'relative', height: '70vh', maxWidth: '800px', overflowY: 'scroll' }}>
                     <pre>{ JSON.stringify(messages, null, 2) }</pre>
                   </div>
 
