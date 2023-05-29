@@ -26,22 +26,26 @@ export default function AttachmentsWidget(props) {
       props.setHandler(selectFiles);
   }, []);
 
-  function resolvePreview(file) {
+  function createObjectURL(file) {
+    return URL.createObjectURL(file);
+  }
+
+  function resolvePreview(objectURL, file) {
     if (file.type.indexOf('image') > -1) {
-      return (<img style={{ width: 'auto', height: '40vh' }} src={URL.createObjectURL(file)} />)
+      return (<img style={{ width: 'auto', height: '40vh' }} src={objectURL} />)
     }
     if (file.type.indexOf('video') > -1) {
-      return (<video style={{ width: 'auto', height: '40vh' }} src={URL.createObjectURL(file)} controls />)
+      return (<video style={{ width: 'auto', height: '40vh' }} src={objectURL} controls />)
     }
     return (<div style={{ width: '200px', height: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', }}>No Preview Available</div>)
   }
 
-  function resolveThumbnail(file) {
+  function resolveThumbnail(objectURL, file) {
     if (file.type.indexOf('image') > -1) {
-      return <img style={{ border: '1px solid #000', objectFit: 'cover', width: '50px', height: '50px' }} src={URL.createObjectURL(file)} />;
+      return <img style={{ border: '1px solid #000', objectFit: 'cover', width: '50px', height: '50px' }} src={objectURL} />;
     }
     if (file.type.indexOf('video') > -1) {
-      return <video style={{ border: '1px solid #000', objectFit: 'cover', width: '50px', height: '50px' }} src={URL.createObjectURL(file)} />;
+      return <video style={{ border: '1px solid #000', objectFit: 'cover', width: '50px', height: '50px' }} src={objectURL} />;
     }
     return <div style={{ border: '1px solid #000', width: '50px', height: '50px', fontSize: '10px' }}>No Preview Available</div>;
   }
@@ -87,7 +91,8 @@ export default function AttachmentsWidget(props) {
     let temp = [];
     [...evt.target.files].forEach((file) => {
       if (file.size > 0) {
-        temp.push({ file, thumbnail: resolveThumbnail(file), preview: resolvePreview(file), caption: ''});
+        const objectURL = createObjectURL(file);
+        temp.push({ file, thumbnail: resolveThumbnail(objectURL, file), preview: resolvePreview(objectURL, file), caption: ''});
       }
     });
     setAttachments([...attachments, ...temp]);
