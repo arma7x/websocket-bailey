@@ -7,7 +7,7 @@ import eventEmitter from './eventEmitter';
 
 
 const MAIN_LOGGER = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` });
-const logger = MAIN_LOGGER.child({})
+const logger = MAIN_LOGGER.child({ enabled: false })
 logger.level = 'trace'
 
 const useStore = !process.argv.includes('--no-store')
@@ -54,29 +54,20 @@ const startSock = async({ session_id, session_path, baileys_auth_info, baileys_s
 
 	store?.bind(sock.ev)
 
-	sock.ev.on('chats.set', () => {
-		console.log('got chats', store.chats.all());
-	})
-
-	sock.ev.on('messages.upsert', ({ messages }) => {
-		console.log('got messages', messages)
-	})
-
 	const broadcastChatList = () => {
 		let chats = [];
-		store.chats.all().forEach(chat => {
+		store.chats.all().forEach((chat) => {
+			const _messages = store.messages[chat.id].array;
 			if (Object.keys(chat).length > 3 && chat.id.indexOf('broadcast') === -1) {
 				chats.push({
 					id: chat.id,
 					unreadCount: chat.unreadCount | 0,
-					messages: chat.messages,
-					_messages: store.messages[chat.id].array,
+					messages: store.messages[chat.id].array,
 					conversationTimestamp: chat.conversationTimestamp
 				});
 			}
 		});
 		eventEmitter.emit('chats.set', { session_id, data: chats });
-		console.log();
 	}
 
 	const sendMessageWTyping = async(msg: AnyMessageContent, jid: string) => {
@@ -193,11 +184,6 @@ const startSock = async({ session_id, session_path, baileys_auth_info, baileys_s
 				// console.log(events['presence.update'])
 			}
 
-			if(events['chats.update']) {
-				// console.log(events['chats.update'])
-				broadcastChatList();
-			}
-
 			if(events['contacts.update']) {
 				for(const contact of events['contacts.update']) {
 					if(typeof contact.imgUrl !== 'undefined') {
@@ -209,8 +195,16 @@ const startSock = async({ session_id, session_path, baileys_auth_info, baileys_s
 				}
 			}
 
+			if(events['chats.upsert']) {
+				broadcastChatList();
+			}
+
+
+			if(events['chats.update']) {
+				broadcastChatList();
+			}
+
 			if(events['chats.delete']) {
-				// console.log('chats deleted ', events['chats.delete'])
 				broadcastChatList();
 			}
 		}

@@ -61,15 +61,34 @@ export default function Home() {
     socketInitializer();
   }, []);
 
-  function resolveMessage(message) {
-    if (message.conversation)
-      return <div>{message.conversation}</div>;
-    if (message.templateMessage)
-      return <div>{message.templateMessage.hydratedTemplate.hydratedContentText}</div>
+  function resolveChatWidget(chat) {
+    let index = 1;
+    let message = chat.messages[chat.messages.length - index].message;
+    while ('reactionMessage' in message) {
+      index++;
+      message = chat.messages[chat.messages.length - index].message;
+    }
+    let lastMessage = <div>NOT_YET_IMPLEMENT</div>;
+    if (message?.editedMessage?.message.protocolMessage.editedMessage.conversation)
+      lastMessage = <div>{message.editedMessage.message.protocolMessage.editedMessage.conversation}</div>;
+    if (message?.extendedTextMessage?.text)
+      lastMessage = <div>{message?.extendedTextMessage?.text}</div>;
+    if (message?.conversation)
+      lastMessage = <div>{message.conversation}</div>;
+    if (message?.templateMessage)
+      lastMessage = <div>{message.templateMessage.hydratedTemplate.hydratedContentText.substring(0, 80)}</div>;
+    return (
+      <>
+        <div>{chat.id}</div>
+        <div>UNREAD: {chat.unreadCount}</div>
+        {lastMessage}
+        <div>{new Date(chat.messages[chat.messages.length - index].messageTimestamp * 1000).toString()}</div>
+      </>
+    );
   }
 
   function openChat(chat) {
-    setMessages(chat._messages);
+    setMessages(chat.messages);
     setWindows(chat.id);
   }
 
@@ -100,10 +119,7 @@ export default function Home() {
                 windows === 'CHAT_LIST' && chats.map((chat) =>
                   <a key={chat.id} onClick={() => openChat(chat)} style={{ cursor: 'pointer' }}>
                     <div style={{ backgroundColor: '#fff', marginBottom: '10px', border: '1px solid #000', padding: '5px', borderRadius: '5px' }}>
-                      <div>{chat.id}</div>
-                      <div>{chat.unreadCount}</div>
-                      { resolveMessage(chat.messages[0].message.message) }
-                      <div>{new Date(chat.conversationTimestamp.low * 1000).toString()}</div>
+                      { resolveChatWidget(chat) }
                     </div>
                   </a>
                 )
@@ -113,7 +129,7 @@ export default function Home() {
                 <div style={{ position: 'relative' }}>
                   <button onClick={showChatList}>Go Back</button>
                   <div style={{ position: 'relative', height: '70vh', maxWidth: '800px', overflowY: 'scroll' }}>
-                    <p>{ JSON.stringify(messages, null, 2) }</p>
+                    <pre>{ JSON.stringify(messages, null, 2) }</pre>
                   </div>
 
                   <AttachmentsWidget setHandler={(handler) =>  openAttachmentsWidget = handler } onCancel={onCancel} onSuccess={onSuccess} />
